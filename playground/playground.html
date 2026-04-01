@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lattice Playground</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Tokens ──────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0A0A0F;--surface:#12121A;--panel:#1A1A2E;--border:#2A2A3E;
+  --teal:#00E5CC;--amber:#F59E0B;--violet:#8B5CF6;
+  --red:#EF4444;--green:#10B981;
+  --text:#E8E8ED;--muted:#6B6B80;
+  --font-ui:'DM Sans',system-ui,sans-serif;
+  --font-code:'JetBrains Mono',monospace;
+  --radius:6px;--radius-lg:10px;
+  --left-w:300px;--right-w:350px;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font-ui);font-size:14px;-webkit-font-smoothing:antialiased}
+
+/* Light mode */
+.light{--bg:#F0F0F5;--surface:#FAFAFC;--panel:#FFFFFF;--border:#D8D8E0;--text:#1A1A2E;--muted:#6B6B80}
+.light .top-bar,.light .status-bar{background:var(--panel);border-color:var(--border)}
+.light .code-area{background:var(--surface);color:var(--text)}
+.light .console{background:var(--surface)}
+
+/* ── Dot-grid pattern ────────────────────────────────── */
+.dot-grid{
+  background-image:radial-gradient(circle,var(--border) .6px,transparent .6px);
+  background-size:20px 20px;
+}
+
+/* ── Layout ──────────────────────────────────────────── */
+#app{display:flex;flex-direction:column;height:100vh;width:100vw}
+.top-bar{display:flex;align-items:center;height:44px;padding:0 16px;background:var(--surface);border-bottom:1px solid var(--border);gap:12px;flex-shrink:0;z-index:20}
+.main{display:flex;flex:1;overflow:hidden;position:relative}
+.status-bar{display:flex;align-items:center;height:28px;padding:0 14px;background:var(--surface);border-top:1px solid var(--border);font-size:12px;color:var(--muted);gap:18px;flex-shrink:0;font-family:var(--font-code)}
+
+/* ── Top bar items ───────────────────────────────────── */
+.logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:16px;letter-spacing:-.3px;color:var(--teal);text-decoration:none}
+.logo svg{width:22px;height:22px}
+.logo span{opacity:.55;font-weight:400;font-size:12px;color:var(--muted);margin-left:2px}
+.top-spacer{flex:1}
+.example-select{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:5px 10px;font-family:var(--font-ui);font-size:13px;cursor:pointer;outline:none}
+.example-select:focus{border-color:var(--teal)}
+.icon-btn{background:none;border:1px solid var(--border);border-radius:var(--radius);color:var(--muted);width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
+.icon-btn:hover{color:var(--text);border-color:var(--teal);background:rgba(0,229,204,.06)}
+.icon-btn svg{width:16px;height:16px}
+
+/* ── Panels ──────────────────────────────────────────── */
+.panel-left{width:var(--left-w);min-width:200px;max-width:500px;display:flex;flex-direction:column;background:var(--surface);border-right:1px solid var(--border);overflow:hidden;flex-shrink:0}
+.panel-center{flex:1;display:flex;flex-direction:column;min-width:300px;overflow:hidden}
+.panel-right{width:var(--right-w);min-width:240px;max-width:550px;display:flex;flex-direction:column;background:var(--surface);border-left:1px solid var(--border);overflow:hidden;flex-shrink:0}
+
+/* Resize handles */
+.resize-handle{width:5px;cursor:col-resize;position:relative;z-index:10;flex-shrink:0}
+.resize-handle::after{content:'';position:absolute;top:0;bottom:0;left:2px;width:1px;background:transparent;transition:background .15s}
+.resize-handle:hover::after,.resize-handle.active::after{background:var(--teal)}
+
+/* ── Panel headers ───────────────────────────────────── */
+.panel-header{display:flex;align-items:center;padding:10px 14px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);border-bottom:1px solid var(--border);gap:8px;flex-shrink:0}
+.panel-header .badge{font-size:10px;padding:1px 6px;border-radius:10px;background:rgba(0,229,204,.12);color:var(--teal);font-weight:500}
+
+/* ── Schema Tree ─────────────────────────────────────── */
+.schema-tree{flex:1;overflow-y:auto;padding:8px 0}
+.schema-tree::-webkit-scrollbar{width:6px}
+.schema-tree::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.tree-table{padding:2px 0}
+.tree-table-header{display:flex;align-items:center;padding:6px 14px;cursor:pointer;user-select:none;gap:8px;transition:background .1s}
+.tree-table-header:hover{background:rgba(255,255,255,.03)}
+.tree-table-header .arrow{color:var(--muted);font-size:10px;transition:transform .2s;width:12px;display:inline-flex}
+.tree-table-header .arrow.open{transform:rotate(90deg)}
+.tree-table-header .tname{font-weight:600;font-size:13px}
+.tree-cols{overflow:hidden}
+.tree-col{display:flex;align-items:center;padding:5px 14px 5px 38px;cursor:pointer;gap:8px;transition:background .1s;font-size:13px}
+.tree-col:hover{background:rgba(0,229,204,.04)}
+.tree-col.active{background:rgba(0,229,204,.08)}
+.tree-col .col-icon{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.type-badge{font-size:10px;font-family:var(--font-code);padding:1px 6px;border-radius:4px;font-weight:500;margin-left:auto;white-space:nowrap}
+.type-badge.computed{background:rgba(0,229,204,.12);color:var(--teal)}
+.type-badge.vector{background:rgba(139,92,246,.12);color:var(--violet)}
+.type-badge.blob{background:rgba(245,158,11,.12);color:var(--amber)}
+.type-badge.string{background:rgba(107,107,128,.12);color:var(--muted)}
+
+.add-btn{display:flex;align-items:center;gap:6px;margin:8px 14px;padding:6px 12px;border:1px dashed var(--border);border-radius:var(--radius);color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s;background:none}
+.add-btn:hover{border-color:var(--teal);color:var(--teal);background:rgba(0,229,204,.04)}
+
+/* ── Column detail floating panel ────────────────────── */
+.col-detail{position:fixed;z-index:100;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;width:260px;box-shadow:0 12px 40px rgba(0,0,0,.5);pointer-events:auto;opacity:0;transform:translateY(6px);transition:opacity .15s,transform .15s}
+.col-detail.visible{opacity:1;transform:translateY(0)}
+.col-detail h4{font-size:14px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.col-detail .row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)}
+.col-detail .row:last-child{border:none}
+.col-detail .label{color:var(--muted)}
+.col-detail .val{font-family:var(--font-code);font-size:11px}
+
+/* ── Code Editor ─────────────────────────────────────── */
+.editor-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.editor-toolbar{display:flex;align-items:center;padding:8px 14px;gap:8px;border-bottom:1px solid var(--border);flex-shrink:0}
+.run-btn{display:flex;align-items:center;gap:6px;background:var(--amber);color:#000;border:none;border-radius:var(--radius);padding:6px 16px;font-family:var(--font-ui);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.run-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.run-btn:active{transform:translateY(0)}
+.run-btn svg{width:14px;height:14px}
+.run-btn.running{opacity:.7;pointer-events:none}
+.shortcut-hint{font-size:11px;color:var(--muted);font-family:var(--font-code)}
+.editor-container{flex:1;display:flex;overflow:auto;background:var(--bg);position:relative}
+.line-numbers{padding:12px 0;text-align:right;color:var(--muted);font-family:var(--font-code);font-size:13px;line-height:1.65;user-select:none;min-width:44px;padding-right:12px;padding-left:12px;background:var(--surface);border-right:1px solid var(--border);flex-shrink:0}
+.code-area{flex:1;padding:12px 16px;font-family:var(--font-code);font-size:13px;line-height:1.65;background:transparent;color:var(--text);border:none;outline:none;resize:none;white-space:pre;overflow:auto;tab-size:4;-moz-tab-size:4}
+
+/* ── Console ─────────────────────────────────────────── */
+.console-wrap{height:220px;min-height:80px;max-height:400px;display:flex;flex-direction:column;border-top:1px solid var(--border);flex-shrink:0;overflow:hidden}
+.console-header{display:flex;align-items:center;padding:6px 14px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);border-bottom:1px solid var(--border);gap:8px;flex-shrink:0;cursor:ns-resize}
+.console{flex:1;overflow-y:auto;padding:10px 14px;font-family:var(--font-code);font-size:12px;line-height:1.7;background:var(--bg)}
+.console::-webkit-scrollbar{width:6px}
+.console::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.log-line{display:flex;gap:8px;padding:1px 0}
+.log-line .timestamp{color:var(--muted);flex-shrink:0;min-width:70px}
+.log-line.info .msg{color:var(--teal)}
+.log-line.warn .msg{color:var(--amber)}
+.log-line.error .msg{color:var(--red)}
+.log-line.success .msg{color:var(--green)}
+.log-line .msg{white-space:pre-wrap}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Result table */
+.result-table{border-collapse:collapse;width:100%;margin:8px 0;font-size:12px}
+.result-table th{text-align:left;padding:6px 10px;background:var(--panel);color:var(--teal);font-weight:600;border-bottom:1px solid var(--border)}
+.result-table td{padding:5px 10px;border-bottom:1px solid var(--border);color:var(--text);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.result-table tr:hover td{background:rgba(0,229,204,.03)}
+
+/* ── DAG Inspector ───────────────────────────────────── */
+.dag-canvas-wrap{flex:1;position:relative;overflow:hidden}
+.dag-canvas-wrap canvas{width:100%;height:100%}
+.dag-legend{padding:10px 14px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:var(--muted);flex-shrink:0}
+.legend-item{display:flex;align-items:center;gap:5px}
+.legend-dot{width:8px;height:8px;border-radius:50%}
+
+/* Tooltip */
+.dag-tooltip{position:fixed;z-index:200;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;font-size:12px;pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,.5);opacity:0;transition:opacity .12s}
+.dag-tooltip.visible{opacity:1}
+.dag-tooltip .tt-name{font-weight:600;margin-bottom:4px}
+.dag-tooltip .tt-row{display:flex;justify-content:space-between;gap:12px;color:var(--muted)}
+.dag-tooltip .tt-val{color:var(--text);font-family:var(--font-code);font-size:11px}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media(max-width:900px){
+  .main{flex-direction:column}
+  .panel-left,.panel-right{width:100%!important;max-width:100%!important;min-width:0!important;height:200px;border-right:none;border-left:none}
+  .panel-left{border-bottom:1px solid var(--border)}
+  .panel-right{border-top:1px solid var(--border)}
+  .resize-handle{display:none}
+}
+
+/* ── Animations ──────────────────────────────────────── */
+@keyframes pulse-teal{0%,100%{box-shadow:0 0 0 0 rgba(0,229,204,.4)}50%{box-shadow:0 0 12px 4px rgba(0,229,204,.15)}}
+@keyframes fade-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fade-in .25s ease forwards}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- ── Top Bar ─────────────────────────────────────── -->
+  <header class="top-bar">
+    <a class="logo" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      Lattice <span>Playground</span>
+    </a>
+    <div class="top-spacer"></div>
+    <select class="example-select" id="exampleSelect">
+      <option value="podcast">Podcast Pipeline</option>
+      <option value="article">Article RAG</option>
+      <option value="image">Image Classification</option>
+      <option value="custom">Custom</option>
+    </select>
+    <button class="icon-btn" id="themeToggle" title="Toggle theme">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+    <button class="icon-btn" id="shareBtn" title="Share">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+    </button>
+  </header>
+
+  <!-- ── Main panels ─────────────────────────────────── -->
+  <div class="main">
+    <!-- Left: Schema -->
+    <div class="panel-left" id="panelLeft">
+      <div class="panel-header">Schema <span class="badge" id="tableCount">2 tables</span></div>
+      <div class="schema-tree dot-grid" id="schemaTree"></div>
+      <button class="add-btn" id="addTableBtn">+ Add table</button>
+    </div>
+    <div class="resize-handle" id="resizeLeft"></div>
+
+    <!-- Center: Editor + Console -->
+    <div class="panel-center">
+      <div class="editor-wrap">
+        <div class="editor-toolbar">
+          <button class="run-btn" id="runBtn">
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+            Run
+          </button>
+          <span class="shortcut-hint" id="shortcutHint">Ctrl+Enter</span>
+          <div class="top-spacer"></div>
+        </div>
+        <div class="editor-container" id="editorContainer">
+          <div class="line-numbers" id="lineNumbers"></div>
+          <textarea class="code-area" id="codeArea" spellcheck="false"></textarea>
+        </div>
+      </div>
+      <div class="console-wrap" id="consoleWrap">
+        <div class="console-header" id="consoleHeader">Output</div>
+        <div class="console" id="consoleOutput"></div>
+      </div>
+    </div>
+
+    <div class="resize-handle" id="resizeRight"></div>
+    <!-- Right: DAG -->
+    <div class="panel-right" id="panelRight">
+      <div class="panel-header">DAG Inspector <span class="badge" id="nodeCount">4 nodes</span></div>
+      <div class="dag-canvas-wrap dot-grid" id="dagWrap">
+        <canvas id="dagCanvas"></canvas>
+      </div>
+      <div class="dag-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Source</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--teal)"></div>Computed</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--violet)"></div>Vector</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--muted)"></div>Idle</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Status Bar ──────────────────────────────────── -->
+  <footer class="status-bar">
+    <span>lattice://localhost:9090</span>
+    <span id="statusTables">2 tables</span>
+    <span id="statusRows">0 rows</span>
+    <span id="statusDirty">0 dirty</span>
+    <div class="top-spacer"></div>
+    <span id="statusTime">--</span>
+  </footer>
+</div>
+
+<!-- Column detail panel -->
+<div class="col-detail" id="colDetail"></div>
+<!-- DAG tooltip -->
+<div class="dag-tooltip" id="dagTooltip"></div>
+
+<script>
+/* ================================================================
+   LATTICE PLAYGROUND — All logic in one IIFE
+   ================================================================ */
+(function(){
+"use strict";
+
+/* ── Example datasets ──────────────────────────────── */
+const EXAMPLES = {
+  podcast: {
+    tables: [
+      { name:"podcasts", columns:[
+        {name:"audio",      type:"AudioType", category:"blob"},
+        {name:"transcript", type:"Computed",  category:"computed", deps:["audio"],      udf:"transcribeUDF"},
+        {name:"summary",    type:"Computed",  category:"computed", deps:["transcript"], udf:"summarizeUDF"},
+        {name:"embedding",  type:"VectorType",category:"vector",   deps:["summary"],    udf:"embedUDF"},
+      ]},
+      { name:"episodes", columns:[
+        {name:"title",   type:"StringType", category:"string"},
+        {name:"date",    type:"StringType", category:"string"},
+        {name:"podcast", type:"StringType", category:"string"},
+      ]}
+    ],
+    code: `// Define a podcast processing pipeline
+schema := lattice.TableSchema{
+    Name: "podcasts",
+    Columns: []lattice.ColumnSpec{
+        {Name: "audio", Type: lattice.AudioType},
+        {Name: "transcript", Computed: lattice.Computed(transcribeUDF, "audio")},
+        {Name: "summary", Computed: lattice.Computed(summarizeUDF, "transcript")},
+        {Name: "embedding", Computed: lattice.Computed(embedUDF, "summary")},
+    },
+}
+
+// Insert raw data \u2014 everything else computes automatically
+engine.Insert(ctx, "podcasts", []lattice.Row{
+    {"audio": lattice.BlobFromURL("https://example.com/ep1.mp3")},
+    {"audio": lattice.BlobFromURL("https://example.com/ep2.mp3")},
+})
+
+// Query with vector similarity
+results := engine.Select(ctx, "podcasts",
+    lattice.VectorSearch("embedding", queryVec, 5),
+)`,
+    simulate: {
+      tableName: "podcasts",
+      rows: 2,
+      steps: ["audio","transcript","summary","embedding"],
+      results: [
+        {audio:"ep1.mp3", transcript:"Welcome to the show...", summary:"A discussion about AI pipelines...", embedding:"[0.12, -0.34, 0.78, ...]"},
+        {audio:"ep2.mp3", transcript:"Today we explore...",    summary:"Deep dive into vector search...",  embedding:"[0.45, 0.11, -0.62, ...]"},
+      ]
+    }
+  },
+  article: {
+    tables: [
+      { name:"articles", columns:[
+        {name:"url",        type:"StringType", category:"string"},
+        {name:"content",    type:"Computed",   category:"computed", deps:["url"],      udf:"fetchUDF"},
+        {name:"chunks",     type:"Computed",   category:"computed", deps:["content"],  udf:"chunkUDF"},
+        {name:"embeddings", type:"VectorType", category:"vector",   deps:["chunks"],   udf:"embedUDF"},
+      ]},
+      { name:"queries", columns:[
+        {name:"text",      type:"StringType", category:"string"},
+        {name:"embedding", type:"VectorType", category:"vector", deps:["text"], udf:"embedUDF"},
+      ]}
+    ],
+    code: `// Build a RAG pipeline for articles
+schema := lattice.TableSchema{
+    Name: "articles",
+    Columns: []lattice.ColumnSpec{
+        {Name: "url", Type: lattice.StringType},
+        {Name: "content", Computed: lattice.Computed(fetchUDF, "url")},
+        {Name: "chunks", Computed: lattice.Computed(chunkUDF, "content")},
+        {Name: "embeddings", Computed: lattice.Computed(embedUDF, "chunks")},
+    },
+}
+
+// Add articles by URL
+engine.Insert(ctx, "articles", []lattice.Row{
+    {"url": "https://arxiv.org/abs/2301.00001"},
+    {"url": "https://arxiv.org/abs/2302.00042"},
+    {"url": "https://blog.example.com/rag-patterns"},
+})
+
+// Semantic search across all articles
+results := engine.Select(ctx, "articles",
+    lattice.VectorSearch("embeddings", queryVec, 10),
+)`,
+    simulate: {
+      tableName: "articles",
+      rows: 3,
+      steps: ["url","content","chunks","embeddings"],
+      results: [
+        {url:"arxiv.org/.../2301.00001", content:"We present a novel...",   chunks:"12 chunks", embeddings:"[0.33, 0.17, ...]"},
+        {url:"arxiv.org/.../2302.00042", content:"This paper explores...",  chunks:"8 chunks",  embeddings:"[-0.12, 0.44, ...]"},
+        {url:"blog.example.com/...",     content:"RAG patterns have...",    chunks:"5 chunks",  embeddings:"[0.67, -0.21, ...]"},
+      ]
+    }
+  },
+  image: {
+    tables: [
+      { name:"images", columns:[
+        {name:"image",            type:"ImageType", category:"blob"},
+        {name:"features",         type:"Computed",  category:"computed", deps:["image"],    udf:"extractFeaturesUDF"},
+        {name:"labels",           type:"Computed",  category:"computed", deps:["features"], udf:"classifyUDF"},
+        {name:"confidence_scores",type:"VectorType",category:"vector",   deps:["features"], udf:"scoreUDF"},
+      ]}
+    ],
+    code: `// Image classification pipeline
+schema := lattice.TableSchema{
+    Name: "images",
+    Columns: []lattice.ColumnSpec{
+        {Name: "image", Type: lattice.ImageType},
+        {Name: "features", Computed: lattice.Computed(extractFeaturesUDF, "image")},
+        {Name: "labels", Computed: lattice.Computed(classifyUDF, "features")},
+        {Name: "confidence_scores", Computed: lattice.Computed(scoreUDF, "features")},
+    },
+}
+
+// Upload images for classification
+engine.Insert(ctx, "images", []lattice.Row{
+    {"image": lattice.BlobFromURL("https://example.com/cat.jpg")},
+    {"image": lattice.BlobFromURL("https://example.com/dog.jpg")},
+    {"image": lattice.BlobFromURL("https://example.com/bird.jpg")},
+})
+
+// Retrieve labels
+results := engine.Select(ctx, "images",
+    lattice.Where("confidence_scores > 0.9"),
+)`,
+    simulate: {
+      tableName: "images",
+      rows: 3,
+      steps: ["image","features","labels","confidence_scores"],
+      results: [
+        {image:"cat.jpg",  features:"[512-dim tensor]", labels:"cat, tabby, pet",   confidence_scores:"[0.97, 0.91, 0.88]"},
+        {image:"dog.jpg",  features:"[512-dim tensor]", labels:"dog, golden, pet",  confidence_scores:"[0.99, 0.93, 0.90]"},
+        {image:"bird.jpg", features:"[512-dim tensor]", labels:"bird, robin, wild", confidence_scores:"[0.95, 0.87, 0.72]"},
+      ]
+    }
+  },
+  custom: {
+    tables: [
+      { name:"my_table", columns:[
+        {name:"input",  type:"StringType", category:"string"},
+        {name:"output", type:"Computed",   category:"computed", deps:["input"], udf:"myUDF"},
+      ]}
+    ],
+    code: `// Start building your own pipeline
+schema := lattice.TableSchema{
+    Name: "my_table",
+    Columns: []lattice.ColumnSpec{
+        {Name: "input", Type: lattice.StringType},
+        {Name: "output", Computed: lattice.Computed(myUDF, "input")},
+    },
+}
+
+engine.Insert(ctx, "my_table", []lattice.Row{
+    {"input": "hello world"},
+})
+
+results := engine.Select(ctx, "my_table", lattice.All())`,
+    simulate: {
+      tableName: "my_table",
+      rows: 1,
+      steps: ["input","output"],
+      results: [
+        {input:"hello world", output:"HELLO WORLD"},
+      ]
+    }
+  }
+};
+
+/* ── State ─────────────────────────────────────────── */
+let currentExample = "podcast";
+let dagNodes = [];          // {name, x, y, w, h, category, status, deps}
+let dagAnimating = false;
+let activeCol = null;       // currently highlighted column
+let running = false;
+
+/* ── DOM refs ──────────────────────────────────────── */
+const $ = id => document.getElementById(id);
+const exSel       = $("exampleSelect");
+const schemaTree  = $("schemaTree");
+const codeArea    = $("codeArea");
+const lineNums    = $("lineNumbers");
+const consoleOut  = $("consoleOutput");
+const runBtn      = $("runBtn");
+const dagCanvas   = $("dagCanvas");
+const dagWrap     = $("dagWrap");
+const dagTooltip  = $("dagTooltip");
+const colDetail   = $("colDetail");
+const themeToggle = $("themeToggle");
+const statusTables= $("statusTables");
+const statusRows  = $("statusRows");
+const statusDirty = $("statusDirty");
+const statusTime  = $("statusTime");
+const tableCountBadge = $("tableCount");
+const nodeCountBadge  = $("nodeCount");
+
+/* ── Helpers ───────────────────────────────────────── */
+function ts(){ return new Date().toLocaleTimeString('en',{hour12:false}) }
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)) }
+
+/* ── Theme toggle ──────────────────────────────────── */
+themeToggle.onclick = () => { document.body.classList.toggle("light"); drawDAG(); };
+
+/* ── Share button (simulated) ──────────────────────── */
+$("shareBtn").onclick = () => {
+  const url = location.href.split("?")[0] + "?example=" + currentExample;
+  navigator.clipboard?.writeText(url);
+  const orig = $("shareBtn").title;
+  $("shareBtn").title = "Link copied!";
+  setTimeout(()=> $("shareBtn").title = orig, 1500);
+};
+
+/* ── Shortcut hint ─────────────────────────────────── */
+if(navigator.platform.includes("Mac")) $("shortcutHint").textContent = "\u2318+Enter";
+
+/* ── Load example ──────────────────────────────────── */
+function loadExample(key){
+  currentExample = key;
+  const ex = EXAMPLES[key];
+  // Schema tree
+  buildSchemaTree(ex.tables);
+  // Code
+  codeArea.value = ex.code;
+  syncLineNumbers();
+  // DAG
+  buildDAGNodes(ex.tables);
+  drawDAG();
+  // Console clear
+  consoleOut.innerHTML = '<div class="log-line info"><span class="msg">Ready. Press Run or Ctrl+Enter.</span></div>';
+  // Status
+  let totalCols = 0;
+  ex.tables.forEach(t=> totalCols += t.columns.length);
+  tableCountBadge.textContent = ex.tables.length + " table" + (ex.tables.length>1?"s":"");
+  nodeCountBadge.textContent  = totalCols + " nodes";
+  statusTables.textContent = ex.tables.length + " tables";
+  statusRows.textContent   = "0 rows";
+  statusDirty.textContent  = "0 dirty";
+  statusTime.textContent   = "--";
+  // Hide detail panel
+  colDetail.classList.remove("visible");
+}
+
+/* ── Schema tree ───────────────────────────────────── */
+function buildSchemaTree(tables){
+  schemaTree.innerHTML = "";
+  tables.forEach(t => {
+    const div = document.createElement("div");
+    div.className = "tree-table";
+    const hdr = document.createElement("div");
+    hdr.className = "tree-table-header";
+    hdr.innerHTML = `<span class="arrow open">\u25B6</span><span class="tname">${t.name}</span><span style="color:var(--muted);font-size:11px;margin-left:auto">${t.columns.length} cols</span>`;
+    const cols = document.createElement("div");
+    cols.className = "tree-cols";
+    t.columns.forEach(c => {
+      const row = document.createElement("div");
+      row.className = "tree-col";
+      row.dataset.col = c.name;
+      row.dataset.table = t.name;
+      const dotColor = c.category==="computed"?"var(--teal)":c.category==="vector"?"var(--violet)":c.category==="blob"?"var(--amber)":"var(--muted)";
+      row.innerHTML = `<span class="col-icon" style="background:${dotColor}"></span>${c.name}<span class="type-badge ${c.category}">${c.type}</span>`;
+      row.onclick = (e) => showColDetail(c, t.name, e);
+      cols.appendChild(row);
+    });
+    hdr.onclick = () => {
+      const open = hdr.querySelector(".arrow").classList.toggle("open");
+      cols.style.display = open ? "" : "none";
+    };
+    div.appendChild(hdr);
+    div.appendChild(cols);
+    schemaTree.appendChild(div);
+  });
+}
+
+/* ── Column detail panel ─────────────────────────────── */
+function showColDetail(col, tableName, e){
+  document.querySelectorAll(".tree-col").forEach(el=>el.classList.remove("active"));
+  e.currentTarget.classList.add("active");
+  activeCol = col;
+  const isComputed = col.category === "computed" || col.category === "vector";
+  colDetail.innerHTML = `
+    <h4><span class="col-icon" style="width:8px;height:8px;border-radius:50%;display:inline-block;background:${col.category==="computed"?"var(--teal)":col.category==="vector"?"var(--violet)":col.category==="blob"?"var(--amber)":"var(--muted)"}"></span>${col.name}</h4>
+    <div class="row"><span class="label">Table</span><span class="val">${tableName}</span></div>
+    <div class="row"><span class="label">Type</span><span class="val">${col.type}</span></div>
+    <div class="row"><span class="label">Computed</span><span class="val">${isComputed?"yes":"no"}</span></div>
+    ${col.deps?`<div class="row"><span class="label">Depends on</span><span class="val">${col.deps.join(", ")}</span></div>`:""}
+    ${col.udf?`<div class="row"><span class="label">UDF</span><span class="val">${col.udf}</span></div>`:""}
+  `;
+  const rect = e.currentTarget.getBoundingClientRect();
+  colDetail.style.top  = rect.top + "px";
+  colDetail.style.left = (rect.right + 10) + "px";
+  colDetail.classList.add("visible");
+  // Highlight in DAG
+  highlightDAGNode(col.name);
+}
+
+document.addEventListener("click", e => {
+  if(!e.target.closest(".tree-col") && !e.target.closest(".col-detail")){
+    colDetail.classList.remove("visible");
+    document.querySelectorAll(".tree-col").forEach(el=>el.classList.remove("active"));
+    activeCol = null;
+    drawDAG();
+  }
+});
+
+/* ── Line numbers ──────────────────────────────────── */
+function syncLineNumbers(){
+  const lines = codeArea.value.split("\n").length;
+  let html = "";
+  for(let i=1;i<=lines;i++) html += i + "\n";
+  lineNums.textContent = html;
+}
+codeArea.addEventListener("input", syncLineNumbers);
+codeArea.addEventListener("scroll", () => { lineNums.scrollTop = codeArea.scrollTop; });
+codeArea.addEventListener("keydown", e => {
+  if(e.key==="Tab"){
+    e.preventDefault();
+    const s=codeArea.selectionStart, end=codeArea.selectionEnd;
+    codeArea.value = codeArea.value.substring(0,s)+"    "+codeArea.value.substring(end);
+    codeArea.selectionStart = codeArea.selectionEnd = s+4;
+    syncLineNumbers();
+  }
+});
+
+/* ── Run ───────────────────────────────────────────── */
+document.addEventListener("keydown", e => {
+  if((e.metaKey||e.ctrlKey) && e.key==="Enter"){ e.preventDefault(); runSimulation(); }
+});
+runBtn.onclick = () => runSimulation();
+
+async function runSimulation(){
+  if(running) return;
+  running = true;
+  runBtn.classList.add("running");
+  runBtn.innerHTML = '<span class="spinner"></span>Running...';
+  consoleOut.innerHTML = "";
+  const ex = EXAMPLES[currentExample];
+  const sim = ex.simulate;
+
+  // Reset DAG statuses
+  dagNodes.forEach(n=> n.status = "idle");
+  drawDAG();
+
+  logLine("info", `Creating table ${sim.tableName}...`);
+  await sleep(400);
+  logLine("success", `Table "${sim.tableName}" created.`);
+  await sleep(300);
+  logLine("info", `Inserting ${sim.rows} row${sim.rows>1?"s":""}...`);
+  statusRows.textContent = sim.rows + " rows";
+  await sleep(350);
+  logLine("success", `${sim.rows} row${sim.rows>1?"s":""} inserted.`);
+
+  // Mark source dirty
+  const srcNode = dagNodes.find(n=> !n.deps || n.deps.length===0);
+  if(srcNode){ srcNode.status = "clean"; drawDAG(); }
+
+  // Compute each step
+  let dirtyCount = sim.steps.length * sim.rows;
+  statusDirty.textContent = dirtyCount + " dirty";
+  for(let s=1; s<sim.steps.length; s++){
+    const stepName = sim.steps[s];
+    const node = dagNodes.find(n=> n.name === stepName);
+    for(let r=0; r<sim.rows; r++){
+      if(node) node.status = "computing";
+      drawDAG();
+      logLine("info", `Computing ${stepName} for row ${r+1}...`);
+      await sleep(280 + Math.random()*200);
+      dirtyCount--;
+      statusDirty.textContent = dirtyCount + " dirty";
+    }
+    if(node) node.status = "clean";
+    drawDAG();
+    logLine("success", `${stepName} complete for all rows.`);
+    await sleep(150);
+  }
+
+  statusDirty.textContent = "0 dirty";
+  statusTime.textContent = ts();
+  await sleep(200);
+
+  // Show result table
+  logLine("info", "Query results:");
+  const cols = Object.keys(sim.results[0]);
+  let thtml = '<table class="result-table"><tr>';
+  cols.forEach(c=> thtml += `<th>${c}</th>`);
+  thtml += "</tr>";
+  sim.results.forEach(row => {
+    thtml += "<tr>";
+    cols.forEach(c=> thtml += `<td>${row[c]}</td>`);
+    thtml += "</tr>";
+  });
+  thtml += "</table>";
+  const d = document.createElement("div");
+  d.className = "fade-in";
+  d.innerHTML = thtml;
+  consoleOut.appendChild(d);
+  consoleOut.scrollTop = consoleOut.scrollHeight;
+
+  running = false;
+  runBtn.classList.remove("running");
+  runBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><polygon points="5,3 19,12 5,21"/></svg> Run';
+}
+
+function logLine(level, msg){
+  const d = document.createElement("div");
+  d.className = `log-line ${level} fade-in`;
+  d.innerHTML = `<span class="timestamp">${ts()}</span><span class="msg">${msg}</span>`;
+  consoleOut.appendChild(d);
+  consoleOut.scrollTop = consoleOut.scrollHeight;
+}
+
+/* ── DAG ───────────────────────────────────────────── */
+function buildDAGNodes(tables){
+  dagNodes = [];
+  // Use the first table for DAG (primary pipeline)
+  const t = tables[0];
+  const count = t.columns.length;
+  // Will position in drawDAG based on canvas size
+  t.columns.forEach((c, i) => {
+    dagNodes.push({
+      name: c.name,
+      category: c.category,
+      deps: c.deps || [],
+      status: "idle",
+      index: i,
+      total: count,
+      // x,y,w,h set during draw
+      x:0, y:0, w:0, h:0
+    });
+  });
+}
+
+function drawDAG(){
+  const canvas = dagCanvas;
+  const wrap = dagWrap;
+  const dpr = window.devicePixelRatio || 1;
+  const W = wrap.clientWidth;
+  const H = wrap.clientHeight;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + "px";
+  canvas.style.height = H + "px";
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+
+  if(!dagNodes.length) return;
+
+  const nodeW = Math.min(130, W * 0.6);
+  const nodeH = 40;
+  const padX = (W - nodeW) / 2;
+  const gap = Math.min(70, (H - 60) / dagNodes.length);
+  const startY = Math.max(20, (H - dagNodes.length * (nodeH + gap) + gap) / 2);
+
+  const cs = getComputedStyle(document.body);
+  const teal   = cs.getPropertyValue("--teal").trim()   || "#00E5CC";
+  const amber  = cs.getPropertyValue("--amber").trim()  || "#F59E0B";
+  const violet = cs.getPropertyValue("--violet").trim()  || "#8B5CF6";
+  const muted  = cs.getPropertyValue("--muted").trim()  || "#6B6B80";
+  const border = cs.getPropertyValue("--border").trim()  || "#2A2A3E";
+  const panel  = cs.getPropertyValue("--panel").trim()   || "#1A1A2E";
+  const text   = cs.getPropertyValue("--text").trim()    || "#E8E8ED";
+
+  // Position nodes
+  dagNodes.forEach((n, i) => {
+    n.x = padX;
+    n.y = startY + i * (nodeH + gap);
+    n.w = nodeW;
+    n.h = nodeH;
+  });
+
+  // Draw edges
+  const nameMap = {};
+  dagNodes.forEach(n=> nameMap[n.name] = n);
+  dagNodes.forEach(n => {
+    n.deps.forEach(depName => {
+      const from = nameMap[depName];
+      if(!from) return;
+      const fx = from.x + from.w/2;
+      const fy = from.y + from.h;
+      const tx = n.x + n.w/2;
+      const ty = n.y;
+      ctx.beginPath();
+      ctx.moveTo(fx, fy);
+      const cy1 = fy + (ty - fy)*0.4;
+      const cy2 = fy + (ty - fy)*0.6;
+      ctx.bezierCurveTo(fx, cy1, tx, cy2, tx, ty);
+      ctx.strokeStyle = n.status==="computing" ? teal : border;
+      ctx.lineWidth = n.status==="computing" ? 2 : 1.5;
+      if(n.status==="computing"){
+        ctx.setLineDash([6,4]);
+      } else {
+        ctx.setLineDash([]);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // Arrowhead
+      const aSize = 5;
+      ctx.beginPath();
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(tx - aSize, ty - aSize*1.5);
+      ctx.lineTo(tx + aSize, ty - aSize*1.5);
+      ctx.closePath();
+      ctx.fillStyle = n.status==="computing" ? teal : border;
+      ctx.fill();
+    });
+  });
+
+  // Draw nodes
+  dagNodes.forEach(n => {
+    const isHighlighted = activeCol && activeCol.name === n.name;
+    let color = muted;
+    if(n.category==="computed") color = teal;
+    else if(n.category==="vector") color = violet;
+    else if(n.category==="blob") color = amber;
+    else if(n.category==="string") color = muted;
+
+    // Node background
+    ctx.beginPath();
+    roundRect(ctx, n.x, n.y, n.w, n.h, 8);
+    ctx.fillStyle = panel;
+    ctx.fill();
+    ctx.strokeStyle = n.status==="computing" ? teal : n.status==="clean" ? teal : isHighlighted ? teal : border;
+    ctx.lineWidth = n.status==="computing" || isHighlighted ? 2 : 1;
+    ctx.stroke();
+
+    // Glow for computing
+    if(n.status === "computing"){
+      ctx.save();
+      ctx.shadowColor = teal;
+      ctx.shadowBlur = 14;
+      ctx.beginPath();
+      roundRect(ctx, n.x, n.y, n.w, n.h, 8);
+      ctx.strokeStyle = teal;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Status dot
+    const dotX = n.x + 14;
+    const dotY = n.y + n.h/2;
+    ctx.beginPath();
+    ctx.arc(dotX, dotY, 4, 0, Math.PI*2);
+    if(n.status==="computing"){
+      ctx.fillStyle = amber;
+    } else if(n.status==="clean"){
+      ctx.fillStyle = teal;
+    } else {
+      ctx.fillStyle = color;
+    }
+    ctx.fill();
+
+    // Name
+    ctx.font = "500 12px 'JetBrains Mono', monospace";
+    ctx.fillStyle = text;
+    ctx.textBaseline = "middle";
+    ctx.fillText(n.name, dotX + 12, dotY);
+  });
+}
+
+function roundRect(ctx, x, y, w, h, r){
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+function highlightDAGNode(name){
+  drawDAG(); // redraws with activeCol set
+}
+
+/* DAG tooltip on hover */
+dagCanvas.addEventListener("mousemove", e => {
+  const rect = dagCanvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  let hit = null;
+  for(const n of dagNodes){
+    if(mx >= n.x && mx <= n.x+n.w && my >= n.y && my <= n.y+n.h){ hit = n; break; }
+  }
+  if(hit){
+    dagTooltip.innerHTML = `
+      <div class="tt-name">${hit.name}</div>
+      <div class="tt-row"><span>Type</span><span class="tt-val">${hit.category}</span></div>
+      <div class="tt-row"><span>Status</span><span class="tt-val">${hit.status}</span></div>
+      ${hit.deps.length?`<div class="tt-row"><span>Deps</span><span class="tt-val">${hit.deps.join(", ")}</span></div>`:""}
+    `;
+    dagTooltip.style.left = (e.clientX + 12) + "px";
+    dagTooltip.style.top  = (e.clientY - 10) + "px";
+    dagTooltip.classList.add("visible");
+    dagCanvas.style.cursor = "pointer";
+  } else {
+    dagTooltip.classList.remove("visible");
+    dagCanvas.style.cursor = "default";
+  }
+});
+dagCanvas.addEventListener("mouseleave", () => dagTooltip.classList.remove("visible"));
+
+/* ── Panel resizing ────────────────────────────────── */
+function setupResize(handleEl, panelEl, side){
+  let startX, startW;
+  function onDown(e){
+    e.preventDefault();
+    startX = e.clientX;
+    startW = panelEl.offsetWidth;
+    handleEl.classList.add("active");
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  }
+  function onMove(e){
+    const dx = e.clientX - startX;
+    const newW = side==="left" ? startW + dx : startW - dx;
+    panelEl.style.width = Math.max(200, Math.min(550, newW)) + "px";
+    drawDAG();
+  }
+  function onUp(){
+    handleEl.classList.remove("active");
+    document.removeEventListener("mousemove", onMove);
+    document.removeEventListener("mouseup", onUp);
+  }
+  handleEl.addEventListener("mousedown", onDown);
+}
+setupResize($("resizeLeft"),  $("panelLeft"),  "left");
+setupResize($("resizeRight"), $("panelRight"), "right");
+
+/* Console resize */
+(function(){
+  const hdr = $("consoleHeader");
+  const wrap = $("consoleWrap");
+  let startY, startH;
+  hdr.addEventListener("mousedown", e => {
+    e.preventDefault();
+    startY = e.clientY;
+    startH = wrap.offsetHeight;
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  });
+  function onMove(e){
+    const dy = startY - e.clientY;
+    wrap.style.height = Math.max(80, Math.min(400, startH + dy)) + "px";
+  }
+  function onUp(){
+    document.removeEventListener("mousemove", onMove);
+    document.removeEventListener("mouseup", onUp);
+  }
+})();
+
+/* ── Add table button (simulated) ────────────────── */
+$("addTableBtn").onclick = () => {
+  const name = prompt("Table name:");
+  if(!name) return;
+  const ex = EXAMPLES[currentExample];
+  ex.tables.push({ name, columns:[{name:"id", type:"StringType", category:"string"}] });
+  loadExample(currentExample);
+};
+
+/* ── Example selector ────────────────────────────── */
+exSel.onchange = () => loadExample(exSel.value);
+
+/* ── Resize observer for DAG canvas ──────────────── */
+new ResizeObserver(() => drawDAG()).observe(dagWrap);
+
+/* ── Init ────────────────────────────────────────── */
+// Check URL for example param
+const urlEx = new URLSearchParams(location.search).get("example");
+if(urlEx && EXAMPLES[urlEx]){ exSel.value = urlEx; }
+loadExample(exSel.value);
+
+})();
+</script>
+</body>
+</html>

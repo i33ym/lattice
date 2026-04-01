@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Release
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Run tests
+        run: go test -race -count=1 ./...
+
+      - name: Build linux/amd64
+        env:
+          GOOS: linux
+          GOARCH: amd64
+        run: |
+          go build -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o dist/latticed-linux-amd64 ./cmd/latticed
+          go build -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o dist/lattice-linux-amd64 ./cmd/lattice
+
+      - name: Build linux/arm64
+        env:
+          GOOS: linux
+          GOARCH: arm64
+        run: |
+          go build -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o dist/latticed-linux-arm64 ./cmd/latticed
+          go build -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o dist/lattice-linux-arm64 ./cmd/lattice
+
+      - name: Build darwin/amd64
+        env:
+          GOOS: darwin
+          GOARCH: amd64
+        run: |
+          go build -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o dist/latticed-darwin-amd64 ./cmd/latticed
+          go build -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o dist/lattice-darwin-amd64 ./cmd/lattice
+
+      - name: Build darwin/arm64
+        env:
+          GOOS: darwin
+          GOARCH: arm64
+        run: |
+          go build -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o dist/latticed-darwin-arm64 ./cmd/latticed
+          go build -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o dist/lattice-darwin-arm64 ./cmd/lattice
+
+      - name: Generate checksums
+        working-directory: dist
+        run: sha256sum * > checksums.txt
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            dist/*

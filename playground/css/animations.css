@@ -1,0 +1,48 @@
+/* ── Keyframes ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, .4); }
+  50% { box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
+}
+
+@keyframes pulse-teal {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 229, 204, .3); }
+  50% { box-shadow: 0 0 0 6px rgba(0, 229, 204, 0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── Scroll reveal ── */
+.sr {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity .7s var(--ease), transform .7s var(--ease);
+}
+.sr.visible { opacity: 1; transform: translateY(0); }
+.sr-d1 { transition-delay: .1s; }
+.sr-d2 { transition-delay: .2s; }
+.sr-d3 { transition-delay: .3s; }
+.sr-d4 { transition-delay: .4s; }
+.sr-d5 { transition-delay: .5s; }
+.sr-d6 { transition-delay: .6s; }

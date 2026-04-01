@@ -7,28 +7,18 @@
 <meta name="description" content="A reactive, pluggable multimodal data engine written in Go. Define computed columns, insert data, and let the DAG engine handle the rest.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/animations.css">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+/* ── Page-specific variable overrides ── */
 :root{
-  --bg:#0A0A0F;--surface:#12121A;--card:#1A1A2E;
-  --teal:#00E5CC;--amber:#F59E0B;--violet:#8B5CF6;--red:#EF4444;
-  --text:#E8E8ED;--muted:#6B6B80;--dim:#2A2A3E;
-  --serif:'Instrument Serif',Georgia,serif;
-  --sans:'DM Sans',system-ui,sans-serif;
-  --mono:'JetBrains Mono',monospace;
-  --ease:cubic-bezier(.22,1,.36,1);
+  --dim:#2A2A3E;
 }
-html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-body{font-family:var(--sans);background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
-a{color:inherit;text-decoration:none}
-::selection{background:rgba(0,229,204,.25);color:#fff}
-
-/* ── Scroll reveal ── */
-.sr{opacity:0;transform:translateY(32px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
-.sr.visible{opacity:1;transform:translateY(0)}
-.sr-d1{transition-delay:.1s}.sr-d2{transition-delay:.2s}.sr-d3{transition-delay:.3s}
-.sr-d4{transition-delay:.4s}.sr-d5{transition-delay:.5s}.sr-d6{transition-delay:.6s}
+html{scroll-behavior:smooth}
+body{line-height:1.6;overflow-x:hidden}
 
 /* ── Navigation ── */
 nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 24px;transition:background .4s,box-shadow .4s,backdrop-filter .4s}
@@ -56,28 +46,11 @@ nav.scrolled{background:rgba(10,10,15,.72);backdrop-filter:blur(20px) saturate(1
 .hero h1 em{font-style:italic;color:var(--teal);position:relative}
 .hero p.sub{font-size:clamp(1rem,2vw,1.25rem);color:var(--muted);max-width:600px;margin:0 auto 40px;line-height:1.7}
 .hero-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:56px}
-.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:10px;font-family:var(--sans);font-size:.9375rem;font-weight:600;cursor:pointer;transition:transform .2s var(--ease),box-shadow .2s var(--ease),background .2s;border:none}
-.btn:active{transform:scale(.97)}
-.btn-primary{background:var(--teal);color:#0A0A0F;box-shadow:0 0 0 0 rgba(0,229,204,0)}
-.btn-primary:hover{box-shadow:0 0 32px rgba(0,229,204,.25);transform:translateY(-1px)}
-.btn-secondary{background:transparent;color:var(--text);border:1px solid var(--dim)}
-.btn-secondary:hover{border-color:var(--muted);background:rgba(255,255,255,.03)}
 .hero-code{text-align:left;max-width:720px;margin:0 auto;background:rgba(18,18,26,.85);border:1px solid var(--dim);border-radius:14px;overflow:hidden;backdrop-filter:blur(12px)}
-.code-header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid rgba(255,255,255,.04)}
-.code-dots{display:flex;gap:7px}
-.code-dots i{width:11px;height:11px;border-radius:50%;background:var(--dim)}
-.code-dots i:first-child{background:#EF4444}.code-dots i:nth-child(2){background:#F59E0B}.code-dots i:last-child{background:#22C55E}
-.code-lang{font-family:var(--mono);font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
-.copy-btn{background:none;border:1px solid var(--dim);color:var(--muted);border-radius:6px;padding:4px 10px;font-size:.7rem;font-family:var(--mono);cursor:pointer;transition:color .2s,border-color .2s}
-.copy-btn:hover{color:var(--text);border-color:var(--muted)}
-.copy-btn.copied{color:var(--teal);border-color:var(--teal)}
 .hero-code pre{padding:20px 24px;overflow-x:auto;font-family:var(--mono);font-size:.8125rem;line-height:1.75;tab-size:4;scrollbar-width:thin;scrollbar-color:var(--dim) transparent}
 .hero-code pre::-webkit-scrollbar{height:6px}
 .hero-code pre::-webkit-scrollbar-track{background:transparent}
 .hero-code pre::-webkit-scrollbar-thumb{background:var(--dim);border-radius:3px}
-
-/* Syntax colors */
-.kw{color:var(--violet)}.fn{color:#60A5FA}.str{color:#34D399}.cm{color:var(--muted);font-style:italic}.tp{color:var(--teal)}.num{color:var(--amber)}
 
 /* ── Section base ── */
 section{padding:120px 24px}
@@ -132,9 +105,6 @@ section{padding:120px 24px}
 .adapter h4{font-size:.9375rem;font-weight:600}
 .adapter-type{font-family:var(--mono);font-size:.6875rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 .adapter-badge{font-size:.6875rem;padding:3px 10px;border-radius:100px;font-weight:500}
-.badge-stable{background:rgba(0,229,204,.1);color:var(--teal);border:1px solid rgba(0,229,204,.15)}
-.badge-beta{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.15)}
-.badge-planned{background:rgba(139,92,246,.1);color:var(--violet);border:1px solid rgba(139,92,246,.15)}
 
 /* ── Code examples ── */
 .examples{background:var(--surface)}
@@ -696,6 +666,8 @@ engine.<span class="fn">Insert</span>(ctx, <span class="str">"videos"</span>, []
   </div>
 </footer>
 
+<script src="js/utils.js"></script>
+<script src="js/nav.js"></script>
 <script>
 // ── Lattice Canvas Animation ──
 (function() {
@@ -834,18 +806,7 @@ engine.<span class="fn">Insert</span>(ctx, <span class="str">"videos"</span>, []
 })();
 
 // ── Scroll reveal ──
-(function() {
-  const observer = new IntersectionObserver(function(entries) {
-    entries.forEach(function(entry) {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-
-  document.querySelectorAll('.sr').forEach(function(el) { observer.observe(el); });
-})();
+initScrollReveal();
 
 // ── Tabs ──
 (function() {
@@ -863,20 +824,6 @@ engine.<span class="fn">Insert</span>(ctx, <span class="str">"videos"</span>, []
     });
   });
 })();
-
-// ── Copy button ──
-function copyCode(btn) {
-  const pre = btn.closest('.hero-code, .tab-panel').querySelector('pre');
-  const text = pre.textContent;
-  navigator.clipboard.writeText(text).then(function() {
-    btn.textContent = 'Copied!';
-    btn.classList.add('copied');
-    setTimeout(function() {
-      btn.textContent = 'Copy';
-      btn.classList.remove('copied');
-    }, 2000);
-  });
-}
 
 // ── Close mobile nav on link click ──
 document.querySelectorAll('.nav-links a').forEach(function(a) {

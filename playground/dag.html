@@ -6,32 +6,29 @@
 <title>Lattice - DAG Visualization</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/animations.css">
 <style>
 :root {
-  --bg-base: #0A0A0F;
-  --bg-surface: #12121A;
-  --bg-panel: #1A1A2E;
-  --border: #2A2A3E;
-  --border-light: #3A3A4E;
-  --accent-teal: #00E5CC;
-  --accent-amber: #F59E0B;
-  --accent-violet: #8B5CF6;
-  --accent-red: #EF4444;
-  --accent-green: #10B981;
-  --text-primary: #E8E8ED;
-  --text-muted: #6B6B80;
-  --text-dim: #4A4A5E;
-  --font-ui: 'DM Sans', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --bg-base: var(--bg);
+  --bg-surface: var(--surface);
+  --bg-panel: var(--card);
+  --accent-teal: var(--teal);
+  --accent-amber: var(--amber);
+  --accent-violet: var(--violet);
+  --accent-red: var(--red);
+  --accent-green: var(--green);
+  --text-primary: var(--text);
+  --text-muted: var(--muted);
+  --text-dim: var(--dim);
+  --font-ui: var(--sans);
+  --font-mono: var(--mono);
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
 body {
-  background: var(--bg-base);
-  color: var(--text-primary);
-  font-family: var(--font-ui);
   overflow: hidden;
   height: 100vh;
   width: 100vw;
@@ -582,12 +579,6 @@ canvas#dagCanvas {
 .tooltip-title { font-family: var(--font-mono); font-weight: 600; margin-bottom: 3px; font-size: 12px; }
 .tooltip-row { color: var(--text-muted); font-size: 10px; line-height: 1.5; }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
-
 /* Mobile */
 @media (max-width: 900px) {
   .left-sidebar, .right-panel { display: none; }
@@ -712,6 +703,8 @@ canvas#dagCanvas {
   <div class="tooltip-row" id="tooltipBody"></div>
 </div>
 
+<script src="js/utils.js"></script>
+<script src="js/nav.js"></script>
 <script>
 // ===== DATA MODEL =====
 const StatusClean = 'clean', StatusDirty = 'dirty', StatusComputing = 'computing', StatusFailed = 'failed', StatusPending = 'pending';

@@ -17,12 +17,21 @@ jobs:
 
       - name: Copy files to web root
         run: |
+          mkdir -p /var/www/lattice/playground/css /var/www/lattice/playground/js
           cp playground/*.html /var/www/lattice/playground/
+          cp playground/css/*.css /var/www/lattice/playground/css/
+          cp playground/js/*.js /var/www/lattice/playground/js/
           sudo chown -R www-data:www-data /var/www/lattice
 
       - name: Verify deployment
         run: |
           for file in index.html playground.html dag.html admin.html; do
+            if [ ! -f "/var/www/lattice/playground/$file" ]; then
+              echo "Missing: $file"
+              exit 1
+            fi
+          done
+          for file in css/tokens.css css/base.css css/components.css css/animations.css js/utils.js js/nav.js; do
             if [ ! -f "/var/www/lattice/playground/$file" ]; then
               echo "Missing: $file"
               exit 1

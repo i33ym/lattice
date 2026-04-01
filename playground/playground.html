@@ -6,19 +6,19 @@
 <title>Lattice Playground</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/animations.css">
 <style>
-/* ── Reset & Tokens ──────────────────────────────────── */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+/* ── Token aliases & page-specific tokens ───────────── */
 :root{
-  --bg:#0A0A0F;--surface:#12121A;--panel:#1A1A2E;--border:#2A2A3E;
-  --teal:#00E5CC;--amber:#F59E0B;--violet:#8B5CF6;
-  --red:#EF4444;--green:#10B981;
-  --text:#E8E8ED;--muted:#6B6B80;
-  --font-ui:'DM Sans',system-ui,sans-serif;
-  --font-code:'JetBrains Mono',monospace;
-  --radius:6px;--radius-lg:10px;
-  --left-w:300px;--right-w:350px;
+  --font-ui: var(--sans);
+  --font-code: var(--mono);
+  --left-w: 300px;
+  --right-w: 350px;
+  --panel: var(--card);
 }
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font-ui);font-size:14px;-webkit-font-smoothing:antialiased}
 
@@ -27,12 +27,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .light .top-bar,.light .status-bar{background:var(--panel);border-color:var(--border)}
 .light .code-area{background:var(--surface);color:var(--text)}
 .light .console{background:var(--surface)}
-
-/* ── Dot-grid pattern ────────────────────────────────── */
-.dot-grid{
-  background-image:radial-gradient(circle,var(--border) .6px,transparent .6px);
-  background-size:20px 20px;
-}
 
 /* ── Layout ──────────────────────────────────────────── */
 #app{display:flex;flex-direction:column;height:100vh;width:100vw}
@@ -47,9 +41,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .top-spacer{flex:1}
 .example-select{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:5px 10px;font-family:var(--font-ui);font-size:13px;cursor:pointer;outline:none}
 .example-select:focus{border-color:var(--teal)}
-.icon-btn{background:none;border:1px solid var(--border);border-radius:var(--radius);color:var(--muted);width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
-.icon-btn:hover{color:var(--text);border-color:var(--teal);background:rgba(0,229,204,.06)}
-.icon-btn svg{width:16px;height:16px}
 
 /* ── Panels ──────────────────────────────────────────── */
 .panel-left{width:var(--left-w);min-width:200px;max-width:500px;display:flex;flex-direction:column;background:var(--surface);border-right:1px solid var(--border);overflow:hidden;flex-shrink:0}
@@ -60,10 +51,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .resize-handle{width:5px;cursor:col-resize;position:relative;z-index:10;flex-shrink:0}
 .resize-handle::after{content:'';position:absolute;top:0;bottom:0;left:2px;width:1px;background:transparent;transition:background .15s}
 .resize-handle:hover::after,.resize-handle.active::after{background:var(--teal)}
-
-/* ── Panel headers ───────────────────────────────────── */
-.panel-header{display:flex;align-items:center;padding:10px 14px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);border-bottom:1px solid var(--border);gap:8px;flex-shrink:0}
-.panel-header .badge{font-size:10px;padding:1px 6px;border-radius:10px;background:rgba(0,229,204,.12);color:var(--teal);font-weight:500}
 
 /* ── Schema Tree ─────────────────────────────────────── */
 .schema-tree{flex:1;overflow-y:auto;padding:8px 0}
@@ -80,11 +67,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .tree-col:hover{background:rgba(0,229,204,.04)}
 .tree-col.active{background:rgba(0,229,204,.08)}
 .tree-col .col-icon{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.type-badge{font-size:10px;font-family:var(--font-code);padding:1px 6px;border-radius:4px;font-weight:500;margin-left:auto;white-space:nowrap}
-.type-badge.computed{background:rgba(0,229,204,.12);color:var(--teal)}
-.type-badge.vector{background:rgba(139,92,246,.12);color:var(--violet)}
-.type-badge.blob{background:rgba(245,158,11,.12);color:var(--amber)}
-.type-badge.string{background:rgba(107,107,128,.12);color:var(--muted)}
 
 .add-btn{display:flex;align-items:center;gap:6px;margin:8px 14px;padding:6px 12px;border:1px dashed var(--border);border-radius:var(--radius);color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s;background:none}
 .add-btn:hover{border-color:var(--teal);color:var(--teal);background:rgba(0,229,204,.04)}
@@ -125,7 +107,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .log-line.success .msg{color:var(--green)}
 .log-line .msg{white-space:pre-wrap}
 .spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
-@keyframes spin{to{transform:rotate(360deg)}}
 
 /* Result table */
 .result-table{border-collapse:collapse;width:100%;margin:8px 0;font-size:12px}
@@ -249,6 +230,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 <!-- DAG tooltip -->
 <div class="dag-tooltip" id="dagTooltip"></div>
 
+<script src="js/utils.js"></script>
+<script src="js/nav.js"></script>
 <script>
 /* ================================================================
    LATTICE PLAYGROUND — All logic in one IIFE
@@ -431,7 +414,6 @@ let activeCol = null;       // currently highlighted column
 let running = false;
 
 /* ── DOM refs ──────────────────────────────────────── */
-const $ = id => document.getElementById(id);
 const exSel       = $("exampleSelect");
 const schemaTree  = $("schemaTree");
 const codeArea    = $("codeArea");
@@ -452,7 +434,6 @@ const nodeCountBadge  = $("nodeCount");
 
 /* ── Helpers ───────────────────────────────────────── */
 function ts(){ return new Date().toLocaleTimeString('en',{hour12:false}) }
-function sleep(ms){ return new Promise(r=>setTimeout(r,ms)) }
 
 /* ── Theme toggle ──────────────────────────────────── */
 themeToggle.onclick = () => { document.body.classList.toggle("light"); drawDAG(); };

@@ -6,36 +6,25 @@
 <title>Lattice — Admin Console</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/animations.css">
 <style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
 :root {
-  --bg: #0A0A0F;
-  --surface: #12121A;
-  --card: #1A1A2E;
-  --border: #2A2A3E;
-  --teal: #00E5CC;
-  --amber: #F59E0B;
-  --violet: #8B5CF6;
-  --error: #EF4444;
-  --success: #10B981;
-  --warning: #F59E0B;
-  --text: #E8E8ED;
-  --muted: #6B6B80;
+  --font-ui: var(--sans);
+  --font-mono: var(--mono);
+  --error: var(--red);
+  --success: var(--green);
+  --warning: var(--amber);
   --sidebar-w: 60px;
   --sidebar-expanded: 240px;
-  --font-ui: 'DM Sans', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
 }
 
 html, body {
   height: 100%;
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-ui);
   font-size: 14px;
-  line-height: 1.5;
   overflow: hidden;
 }
 
@@ -145,10 +134,6 @@ body::before {
   flex-shrink: 0;
   animation: pulse-dot 2s ease-in-out infinite;
 }
-@keyframes pulse-dot {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
-  50% { box-shadow: 0 0 0 4px rgba(16,185,129,0); }
-}
 .sidebar-bottom .conn-label {
   font-size: 11px;
   color: var(--muted);
@@ -179,20 +164,11 @@ body::before {
   overflow-y: auto;
   overflow-x: hidden;
   padding: 24px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
 }
-.main::-webkit-scrollbar { width: 6px; }
-.main::-webkit-scrollbar-track { background: transparent; }
-.main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
 /* View containers */
 .view { display: none; animation: fadeIn 0.25s ease; }
 .view.active { display: block; }
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
 
 /* Cards */
 .card {
@@ -354,7 +330,6 @@ body::before {
 .ops-entry .status.ok { color: var(--success); }
 .ops-entry .status.running { color: var(--amber); animation: spin 1s linear infinite; display: inline-block; }
 .ops-entry .status.fail { color: var(--error); }
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
 /* Dirty heatmap */
 .heatmap-grid {
@@ -1158,6 +1133,8 @@ body::before {
   </div>
 </div>
 
+<script src="js/utils.js"></script>
+<script src="js/nav.js"></script>
 <script>
 // ========================================
 // DATA

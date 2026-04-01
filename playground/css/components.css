@@ -1,0 +1,159 @@
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: var(--radius-lg);
+  font-family: var(--sans);
+  font-size: .9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .2s var(--ease), box-shadow .2s var(--ease), background .2s;
+  border: none;
+}
+.btn:active { transform: scale(.97); }
+
+.btn-primary {
+  background: var(--teal);
+  color: #0A0A0F;
+  box-shadow: 0 0 0 0 rgba(0, 229, 204, 0);
+}
+.btn-primary:hover {
+  box-shadow: 0 0 32px rgba(0, 229, 204, .25);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover {
+  border-color: var(--muted);
+  background: rgba(255, 255, 255, .03);
+}
+
+/* ── Icon buttons ── */
+.icon-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--muted);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all .15s;
+}
+.icon-btn:hover {
+  color: var(--text);
+  border-color: var(--teal);
+  background: rgba(0, 229, 204, .06);
+}
+.icon-btn svg { width: 16px; height: 16px; }
+
+/* ── Copy button ── */
+.copy-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: var(--radius);
+  padding: 4px 10px;
+  font-size: .7rem;
+  font-family: var(--mono);
+  cursor: pointer;
+  transition: color .2s, border-color .2s;
+}
+.copy-btn:hover { color: var(--text); border-color: var(--muted); }
+.copy-btn.copied { color: var(--teal); border-color: var(--teal); }
+
+/* ── Code block chrome ── */
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, .04);
+}
+.code-dots { display: flex; gap: 7px; }
+.code-dots i {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--border);
+}
+.code-dots i:first-child { background: #EF4444; }
+.code-dots i:nth-child(2) { background: #F59E0B; }
+.code-dots i:last-child { background: #22C55E; }
+.code-lang {
+  font-family: var(--mono);
+  font-size: .7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+/* ── Type badges ── */
+.type-badge {
+  font-size: 10px;
+  font-family: var(--mono);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.type-badge.computed { background: rgba(0, 229, 204, .12); color: var(--teal); }
+.type-badge.vector { background: rgba(139, 92, 246, .12); color: var(--violet); }
+.type-badge.blob { background: rgba(245, 158, 11, .12); color: var(--amber); }
+.type-badge.string { background: rgba(107, 107, 128, .12); color: var(--muted); }
+
+/* ── Status badges ── */
+.badge-stable { background: rgba(0, 229, 204, .1); color: var(--teal); border: 1px solid rgba(0, 229, 204, .15); }
+.badge-beta { background: rgba(245, 158, 11, .1); color: var(--amber); border: 1px solid rgba(245, 158, 11, .15); }
+.badge-planned { background: rgba(139, 92, 246, .1); color: var(--violet); border: 1px solid rgba(139, 92, 246, .15); }
+
+/* ── Cards ── */
+.card {
+  background: var(--card);
+  border: 1px solid rgba(255, 255, 255, .04);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  transition: border-color .3s, box-shadow .3s, transform .3s var(--ease);
+}
+.card:hover {
+  border-color: rgba(0, 229, 204, .15);
+  box-shadow: 0 0 40px rgba(0, 229, 204, .06);
+  transform: translateY(-2px);
+}
+
+/* ── Panel headers ── */
+.panel-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+  flex-shrink: 0;
+}
+.panel-header .badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: rgba(0, 229, 204, .12);
+  color: var(--teal);
+  font-weight: 500;
+}
+
+/* ── Dot-grid background ── */
+.dot-grid {
+  background-image: radial-gradient(circle, var(--border) .6px, transparent .6px);
+  background-size: 20px 20px;
+}

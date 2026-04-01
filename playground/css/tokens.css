@@ -1,0 +1,32 @@
+:root {
+  /* ── Colors ── */
+  --bg: #0A0A0F;
+  --surface: #12121A;
+  --card: #1A1A2E;
+  --border: #2A2A3E;
+  --border-light: #3A3A4E;
+
+  --teal: #00E5CC;
+  --amber: #F59E0B;
+  --violet: #8B5CF6;
+  --red: #EF4444;
+  --green: #10B981;
+  --blue: #60A5FA;
+
+  --text: #E8E8ED;
+  --muted: #6B6B80;
+  --dim: #4A4A5E;
+
+  /* ── Typography ── */
+  --serif: 'Instrument Serif', Georgia, serif;
+  --sans: 'DM Sans', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+
+  /* ── Motion ── */
+  --ease: cubic-bezier(.22, 1, .36, 1);
+
+  /* ── Radii ── */
+  --radius: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+}

@@ -1,0 +1,29 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "playground/**"
+
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Playground
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy files to web root
+        run: cp playground/*.html /var/www/lattice/playground/
+
+      - name: Verify deployment
+        run: |
+          for file in index.html playground.html dag.html admin.html; do
+            if [ ! -f "/var/www/lattice/playground/$file" ]; then
+              echo "Missing: $file"
+              exit 1
+            fi
+          done
+          echo "All files deployed successfully"

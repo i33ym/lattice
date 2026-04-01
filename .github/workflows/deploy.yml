@@ -16,7 +16,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Copy files to web root
-        run: cp playground/*.html /var/www/lattice/playground/
+        run: |
+          cp playground/*.html /var/www/lattice/playground/
+          sudo chown -R www-data:www-data /var/www/lattice
 
       - name: Verify deployment
         run: |

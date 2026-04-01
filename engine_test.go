@@ -126,10 +126,10 @@ func TestEngineDropTable(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name     string
-		create   string
-		drop     string
-		wantErr  error
+		name    string
+		create  string
+		drop    string
+		wantErr error
 	}{
 		{"DropTable/existingTable/succeeds", "droppable", "droppable", nil},
 		{"DropTable/nonExistingTable/returnsErrTableNotFound", "other", "missing", ErrTableNotFound},
@@ -193,11 +193,11 @@ func TestEngineTables(t *testing.T) {
 
 type stubStore struct{}
 
-func (s *stubStore) CreateTable(context.Context, TableSchema) error                    { return nil }
-func (s *stubStore) DropTable(context.Context, string) error                           { return nil }
-func (s *stubStore) Insert(context.Context, string, []Row) error                       { return nil }
-func (s *stubStore) Update(context.Context, string, string, map[string]any) error      { return nil }
-func (s *stubStore) Delete(context.Context, string, string) error                      { return nil }
-func (s *stubStore) Query(context.Context, string, Expr) (RowIterator, error)          { return nil, nil }
-func (s *stubStore) Schema(context.Context, string) (TableSchema, error)               { return TableSchema{}, nil }
-func (s *stubStore) Get(context.Context, string, string) (Row, error)                  { return nil, nil }
+func (s *stubStore) CreateTable(context.Context, TableSchema) error               { return nil }
+func (s *stubStore) DropTable(context.Context, string) error                      { return nil }
+func (s *stubStore) Insert(context.Context, string, []Row) error                  { return nil }
+func (s *stubStore) Update(context.Context, string, string, map[string]any) error { return nil }
+func (s *stubStore) Delete(context.Context, string, string) error                 { return nil }
+func (s *stubStore) Query(context.Context, string, Expr) (RowIterator, error)     { return nil, nil }
+func (s *stubStore) Schema(context.Context, string) (TableSchema, error)          { return TableSchema{}, nil }
+func (s *stubStore) Get(context.Context, string, string) (Row, error)             { return nil, nil }

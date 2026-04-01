@@ -35,7 +35,7 @@ func (s *testSliceIterator) Row() Row {
 	return s.rows[s.pos]
 }
 
-func (s *testSliceIterator) Err() error  { return s.err }
+func (s *testSliceIterator) Err() error   { return s.err }
 func (s *testSliceIterator) Close() error { return nil }
 
 func TestCollectRows(t *testing.T) {

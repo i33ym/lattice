@@ -20,10 +20,10 @@ func TestEvalSuccess(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name    string
-		udf     string
-		inputs  map[string]any
-		want    map[string]any
+		name   string
+		udf    string
+		inputs map[string]any
+		want   map[string]any
 	}{
 		{
 			"Eval/simpleUDF/returnsResult",

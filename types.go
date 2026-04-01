@@ -63,7 +63,7 @@ type vectorType struct{ dim int }
 // VectorType returns a vector type with the given dimension.
 func VectorType(dim int) Type { return vectorType{dim: dim} }
 
-func (v vectorType) Name() string   { return fmt.Sprintf("vector(%d)", v.dim) }
+func (v vectorType) Name() string { return fmt.Sprintf("vector(%d)", v.dim) }
 func (v vectorType) Equal(t Type) bool {
 	other, ok := t.(vectorType)
 	return ok && other.dim == v.dim
